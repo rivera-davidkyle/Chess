@@ -1,5 +1,5 @@
 import React from 'react'
-import { AppBar, Button, Box, Toolbar, Container } from '@mui/material';
+import { AppBar, Button, Box, Toolbar, Container, Typography } from '@mui/material';
 
 export default function Navbar() {
   return (
@@ -8,7 +8,9 @@ export default function Navbar() {
             <Container>
                 <Toolbar>
                     <Button>
-                        Test
+                        <Typography color="common.white">
+                            Test
+                        </Typography>
                     </Button>
                 </Toolbar>
             </Container>
