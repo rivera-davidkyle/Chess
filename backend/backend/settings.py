@@ -129,3 +129,27 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose', 
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format': '[%(asctime)s] %(levelname)s %(message)s',  # Update the format
+            'datefmt': '%d/%b/%Y %H:%M:%S',  # Set the desired date format
+            'style': '%',  # Set the formatting style
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
+
+ENGINE_PATH = f"/home/dkir/Projects/Chess/backend/engine/stockfish_15.1_linux_x64/stockfish-ubuntu-20.04-x86-64"

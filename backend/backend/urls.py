@@ -16,9 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from api.views import StockfishAPI
+from api.views import best_move
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('best_move/', StockfishAPI.as_view(), name='stockfish')
+    path('best_move/', best_move, name='stockfish')
 ]
