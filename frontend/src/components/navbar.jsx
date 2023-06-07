@@ -9,7 +9,7 @@ export default function Navbar() {
                 <Toolbar>
                     <Button>
                         <Typography color="common.white">
-                            Test
+                            Chess
                         </Typography>
                     </Button>
                 </Toolbar>
