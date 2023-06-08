@@ -35,11 +35,12 @@ def best_move(request):
                               parameters={
                                   "UCI_Elo": elo,
                                   "Threads": 2,
+                                  "Hash": 512,
                               })
         if not stockfish.is_fen_valid(fen):
             return Response({'error': 'Invalid FEN position'}, status=400)
         stockfish.set_fen_position(fen)
-        best_mv = stockfish.get_best_move()
+        best_mv = stockfish.get_best_move_time(1000)
 
         # Create the response data
         data = {
