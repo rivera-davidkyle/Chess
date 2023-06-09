@@ -1,23 +1,30 @@
 import { Chessboard } from "react-chessboard";
 import { useState, useEffect } from "react";
 import { Chess } from "chess.js";
-import { Container } from "@mui/material";
+import { Container, Dialog, Button } from "@mui/material";
 import Settings from "./settings.jsx";
 import "../static/css/chessjsx.css";
-import { SettingsSharp } from "@mui/icons-material";
+import {
+  CompareArrowsOutlined,
+  PlagiarismSharp,
+  SettingsSharp,
+} from "@mui/icons-material";
 import Timer from "./timer.jsx";
 
 export default function PvEChess() {
   const [game, setGame] = useState(new Chess());
   const [color, setColor] = useState("white");
+  const [open, setOpen] = useState(false);
   const [timeAmount, setTimeAmount] = useState(1);
   const [playerTime, setPlayerTime] = useState(0);
   const [compTime, setCompTime] = useState(0);
   const [stopPlayerTime, setStopPlayerTime] = useState(false);
   const [stopCompTime, setStopCompTime] = useState(false);
   const [timeUnit, setTimeUnit] = useState("m");
-  const [eloRating, setEloRating] = useState("1200");
+  const [skillLevel, setSkillLevel] = useState(10);
   const [submitted, setSubmitted] = useState(false);
+  const [win, setWin] = useState();
+  const [draw, setDraw] = useState(false);
 
   const SEC_IN_MIN = 60;
   const SEC_IN_HOUR = 3600;
@@ -35,15 +42,15 @@ export default function PvEChess() {
   function makeComputerMove() {
     const possibleMoves = game.moves();
     // exit if the game is over
-    if (game.isGameOver() || game.isStalemate() || possibleMoves.length === 0)
+    if (game.isGameOver() || game.isDraw() || possibleMoves.length === 0)
       return;
     const apiUrl = "http://localhost:8000/best_move/";
     const fen = game.fen(); // Get the current FEN from the game
-    const elo = eloRating; // Replace with the desired Elo rating
+    const elo = skillLevel; // Replace with the desired Elo rating
 
     const requestData = {
       fen: fen,
-      elo: eloRating,
+      skill: skillLevel,
     };
     fetch(apiUrl, {
       method: "POST",
@@ -61,16 +68,14 @@ export default function PvEChess() {
         // Make the best move on the game board
         const updatedGame = new Chess(game.fen());
         updatedGame.move(bestMove);
+        console.log("Computer move: ", bestMove);
         setGame(updatedGame);
-        setStopCompTime(true);
-        setStopPlayerTime(false);
-        if (
-          game.isGameOver() ||
-          game.isStalemate() ||
-          possibleMoves.length === 0
-        ) {
+        if (game.isGameOver() || game.isDraw() || possibleMoves.length === 0) {
           setStopCompTime(true);
           setStopPlayerTime(true);
+        } else {
+          setStopCompTime(true);
+          setStopPlayerTime(false);
         }
         // Update the UI or perform any other necessary actions
       })
@@ -83,39 +88,72 @@ export default function PvEChess() {
   function onDrop(sourceSquare, targetSquare) {
     const gameCopy = new Chess(game.fen());
     let move;
-
     try {
       move = gameCopy.move({
         from: sourceSquare,
         to: targetSquare,
         promotion: "q", // Set promotion to 'q' (queen) by default
       });
+      console.log("Player move: ", move);
       setGame(gameCopy);
       setStopPlayerTime(true);
       setStopCompTime(false);
     } catch {
       move = null;
     }
-
-    console.log(game.fen()); // Log the move for debugging purposes
     if (move === null) return false; // If the move is illegal, return false
 
     return true; // If the move is legal, return true
   }
 
   useEffect(() => {
+    const possibleMoves = game.moves();
+
+    if (game.isGameOver() || game.isDraw() || possibleMoves.length === 0) {
+      setStopCompTime(true);
+      setStopPlayerTime(true);
+    }
     if (color === "white") {
       if (game !== null && game.turn() === "b") {
-        makeComputerMove();
+        if (game.isCheckmate()) {
+          setWin(true);
+        } else if (game.isDraw()) {
+          setDraw(true);
+        } else {
+          makeComputerMove();
+        }
+      } else if (game !== null && game.turn() === "w") {
+        if (game.isCheckmate()) {
+          setWin(false);
+        } else if (game.isDraw()) {
+          setDraw(true);
+        }
       }
     } else {
       if (game !== null && game.turn() === "w") {
-        makeComputerMove();
+        if (game.isCheckmate()) {
+          setWin(true);
+          setOpen(false);
+        } else if (game.isDraw()) {
+          setDraw(true);
+          setOpen(false);
+        } else {
+          makeComputerMove();
+        }
+      } else if (game !== null && game.turn() === "b") {
+        if (game.isCheckmate()) {
+          setWin(false);
+          setOpen(false);
+        } else if (game.isDraw()) {
+          setDraw(true);
+          setOpen(false);
+        }
       }
     }
   }, [game]);
 
   useEffect(() => {
+    setOpen(true);
     if (game !== null && color === "black" && game.turn() === "w") {
       setStopPlayerTime(true);
       setStopCompTime(false);
@@ -141,38 +179,54 @@ export default function PvEChess() {
         setPlayerTime(MS_IN_SEC);
         setCompTime(MS_IN_SEC);
     }
-    console.log(playerTime, compTime);
   }, [submitted]);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [win, draw]);
 
   return (
     <Container sx={containerStyles.sx}>
       <div className="boardWrapper">
         {submitted && (
-          <Timer
-            time={compTime}
-            setTime={setCompTime}
-            stop_time={stopCompTime}
-          />
+          <div className="timerWrapper">
+            <Timer
+              time={compTime}
+              setTime={setCompTime}
+              stop_time={stopCompTime}
+              player={false}
+              win={win}
+              setWin={setWin}
+            />
+          </div>
         )}
         <Chessboard
           id="mainboard"
-          arePiecesDraggable={submitted}
+          arePiecesDraggable={open}
           boardOrientation={color}
           boardWidth={450}
           arePremovesAllowed={true}
           position={game.fen()}
           onPieceDrop={onDrop}
           customBoardStyle={{
-            borderRadius: "4px",
-            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
+            borderRadius: "10px",
+            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.5)",
           }}
         />
         {submitted && (
-          <Timer
-            time={playerTime}
-            setTime={setPlayerTime}
-            stop_time={stopPlayerTime}
-          />
+          <div className="timerWrapper">
+            <Timer
+              time={playerTime}
+              setTime={setPlayerTime}
+              stop_time={stopPlayerTime}
+              player={true}
+              win={win}
+              setWin={setWin}
+            />
+          </div>
+        )}
+        {submitted && (
+          <Dialog open={true}>test</Dialog>
         )}
       </div>
       <Settings
@@ -182,8 +236,8 @@ export default function PvEChess() {
         setTimeAmount={setTimeAmount}
         timeUnit={timeUnit}
         setTimeUnit={setTimeUnit}
-        eloRating={eloRating}
-        setEloRating={setEloRating}
+        skillLevel={skillLevel}
+        setSkillLevel={setSkillLevel}
         submitted={submitted}
         setSubmitted={setSubmitted}
       />

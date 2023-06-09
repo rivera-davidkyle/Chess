@@ -27,13 +27,14 @@ def best_move(request):
         request_body = request.body.decode('utf-8')
         request_data = json.loads(request_body)
         fen = request_data['fen']
-        elo = request_data['elo']
+        skill = request_data['skill']
 
         # Perform the necessary computations
         stockfish = Stockfish(path=settings.ENGINE_PATH,
                               depth=18,
                               parameters={
-                                  "UCI_Elo": elo,
+                                  "Skill Level": skill,
+                                  "UCI_LimitStrength": "false",
                                   "Threads": 2,
                                   "Hash": 512,
                               })

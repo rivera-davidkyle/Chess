@@ -1,5 +1,6 @@
 import React from "react";
 import { useState } from "react";
+import { Alert } from "@mui/material";
 import Timer from "./timer.jsx";
 import {
   Container,
@@ -33,11 +34,12 @@ const Settings = ({
   setTimeAmount,
   timeUnit,
   setTimeUnit,
-  eloRating,
-  setEloRating,
+  skillLevel,
+  setSkillLevel,
   submitted,
   setSubmitted,
 }) => {
+
   const handleColorChange = (event) => {
     setColor(event.target.value);
   };
@@ -50,16 +52,18 @@ const Settings = ({
     setTimeUnit(event.target.value);
   };
 
-  const handleEloRatingChange = (event) => {
-    setEloRating(event.target.value);
+  const handleSkillLevelChange = (event) => {
+    setSkillLevel(event.target.value);
+    
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(color, timeAmount, timeUnit, eloRating);
     setSubmitted(true);
-  };
-
+    console.log(color, timeAmount, timeUnit, skillLevel);
+    }
+  const timeAmountMin = timeUnit === "m" || timeUnit === "s" ? 1 : 1;
+  const timeAmountMax = timeUnit === "m" || timeUnit === "s" ? 59 : 12;
   return (
     <div>
       {!submitted && (
@@ -80,18 +84,22 @@ const Settings = ({
               </FormControl>
             </Grid>
             <Grid item container spacing={2}>
-              <Grid item xs={6}>
+              <Grid item xl={8}>
                 <FormControl fullWidth>
                   <TextField
                     id="time-amount"
                     label="Time"
                     type="number"
                     value={timeAmount}
+                    inputProps={{
+                      min: timeAmountMin,
+                      max: timeAmountMax,
+                    }}
                     onChange={handleTimeAmountChange}
                   />
                 </FormControl>
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xl={8}>
                 <FormControl fullWidth>
                   <InputLabel id="time-unit-label">Unit</InputLabel>
                   <Select
@@ -100,9 +108,9 @@ const Settings = ({
                     value={timeUnit}
                     onChange={handleTimeUnitChange}
                   >
-                    <MenuItem value="s">second/s</MenuItem>
-                    <MenuItem value="m">minute/s</MenuItem>
-                    <MenuItem value="h">hour/s</MenuItem>
+                    <MenuItem value="s">sec/s</MenuItem>
+                    <MenuItem value="m">min/s</MenuItem>
+                    <MenuItem value="h">hr/s</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -110,11 +118,15 @@ const Settings = ({
             <Grid item>
               <FormControl fullWidth>
                 <TextField
-                  id="elo-rating"
-                  label="ELO Rating"
+                  id="skill-level"
+                  label="Skill Level"
                   type="number"
-                  value={eloRating}
-                  onChange={handleEloRatingChange}
+                  inputProps={{
+                    min: 1,
+                    max: 20,
+                  }}
+                  value={skillLevel}
+                  onChange={handleSkillLevelChange}
                 />
               </FormControl>
             </Grid>
