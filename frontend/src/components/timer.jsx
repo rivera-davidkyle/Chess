@@ -1,7 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { Typography, Paper, Box, Container } from "@mui/material";
-
-const Timer = ({ time, setTime, stop_time, player, win, setWin }) => {
+const containerStyles = {
+  sx: {},
+};
+const boxStyles = {
+  sx: {
+    width: "7vw",
+    height: "5vh",
+    marginLeft: "auto",
+  },
+};
+const paperStyles = {
+  sx: {
+    border: "2px inset #000",
+  },
+};
+const textStyles = {
+  sx: {
+    fontSize: "3vh",
+  },
+};
+const Timer = ({
+  time,
+  setTime,
+  stopTime,
+  setStopTime,
+  player,
+  win,
+  setWin,
+}) => {
   const calculateTime = () => {
     const totalSeconds = Math.floor(time / 1000);
     const updatedHours = Math.floor(totalSeconds / 3600);
@@ -12,50 +39,30 @@ const Timer = ({ time, setTime, stop_time, player, win, setWin }) => {
       minutes: updatedMinutes,
       seconds: updatedSeconds,
     });
-    setTime(time - 1000);
-    console.log(time);
+    setTime(time - 100);
   };
   const [timerData, setTimerData] = useState({
     hours: 0,
     minutes: 0,
     seconds: 0,
   });
-  const containerStyles = {
-    sx: {},
-  };
-  const boxStyles = {
-    sx: {
-      width: "7vw",
-      height: "5vh",
-      marginLeft: "auto",
-    },
-  };
-  const paperStyles = {
-    sx: {
-      border: "2px inset #000",
-    },
-  };
-  const textStyles = {
-    sx: {
-      fontSize: "3vh",
-    },
-  };
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (time >= 0 && !stop_time) {
+      if (time >= 0 && !stopTime) {
         calculateTime();
       } else if (time < 0) {
+        setStopTime(true);
         if (player) {
           setWin(false);
         } else {
           setWin(true);
         }
       }
-    }, 1000);
+    }, 100);
 
     return () => clearInterval(interval);
-  }, [time, stop_time]);
+  }, [time, stopTime]);
 
   const { hours, minutes, seconds } = timerData;
 

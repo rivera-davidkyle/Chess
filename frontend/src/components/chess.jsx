@@ -6,14 +6,34 @@ import {
   Dialog,
   Button,
   Typography,
-  Box,
-  Paper,
   DialogActions,
   DialogContent,
 } from "@mui/material";
 import Settings from "./settings.jsx";
 import "../static/css/chessjsx.css";
 import Timer from "./timer.jsx";
+
+const SEC_IN_MIN = 60;
+const SEC_IN_HOUR = 3600;
+const MS_IN_SEC = 1000;
+
+const containerStyles = {
+  sx: {
+    display: "flex",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "20px",
+  },
+};
+const dialogStyles = {
+  sx: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+};
 
 export default function PvEChess() {
   const [game, setGame] = useState(new Chess());
@@ -31,26 +51,6 @@ export default function PvEChess() {
   const [endMsg, setEndMsg] = useState("null");
   const [endSubMsg, setEndSubMsg] = useState("null");
 
-  const SEC_IN_MIN = 60;
-  const SEC_IN_HOUR = 3600;
-  const MS_IN_SEC = 1000;
-  const containerStyles = {
-    sx: {
-      display: "flex",
-      flexDirection: "row",
-      flexWrap: "wrap",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "20px",
-    },
-  };
-  const dialogStyles = {
-    sx: {
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-    },
-  };
   function makeComputerMove() {
     const possibleMoves = game.moves();
     // exit if the game is over
@@ -58,11 +58,11 @@ export default function PvEChess() {
       return;
     const apiUrl = "http://localhost:8000/best_move/";
     const fen = game.fen(); // Get the current FEN from the game
-    const elo = skillLevel; // Replace with the desired Elo rating
+    const sklevel = skillLevel; // Replace with the desired Elo rating
 
     const requestData = {
       fen: fen,
-      skill: skillLevel,
+      skill: sklevel,
     };
     fetch(apiUrl, {
       method: "POST",
@@ -116,7 +116,8 @@ export default function PvEChess() {
   }
 
   useEffect(() => {
-    if (game === null) return;
+    if (playerTime === 0 || compTime === 0) return;
+    if (game === null || win != null) return;
 
     const possibleMoves = game.moves();
     const currentTurn = game.turn();
@@ -141,21 +142,21 @@ export default function PvEChess() {
     } else if (possibleMoves.length === 0 || game.isGameOver()) {
       setStopCompTime(true);
       setStopPlayerTime(true);
-    } else if (currentTurn === "b" && color === "white") {
+    } else if (currentTurn === "b" && color === "white" && open) {
       makeComputerMove();
-    } else if (currentTurn === "w" && color === "black") {
+    } else if (currentTurn === "w" && color === "black" && open) {
       makeComputerMove();
     }
   }, [game]);
 
   useEffect(() => {
-    if (color === "black" && game.turn() === "w" && submitted) {
-      setOpen(true);
+    if (submitted) setOpen(true);
+    else return;
+    if (color === "black" && game.turn() === "w") {
       setStopPlayerTime(true);
       setStopCompTime(false);
       makeComputerMove();
     } else {
-      setOpen(true);
       setStopPlayerTime(false);
       setStopCompTime(true);
     }
@@ -189,7 +190,6 @@ export default function PvEChess() {
   const handlePlayAgain = (event) => {
     setSubmitted(false);
     setWin(null);
-    setOpen(false);
     setGame(new Chess());
   };
   return (
@@ -211,7 +211,8 @@ export default function PvEChess() {
             <Timer
               time={compTime}
               setTime={setCompTime}
-              stop_time={stopCompTime}
+              stopTime={stopCompTime}
+              setStopTime={setStopCompTime}
               player={false}
               win={win}
               setWin={setWin}
@@ -223,7 +224,6 @@ export default function PvEChess() {
           arePiecesDraggable={open}
           boardOrientation={color}
           boardWidth={450}
-          arePremovesAllowed={true}
           position={game.fen()}
           onPieceDrop={onDrop}
           customBoardStyle={{
@@ -236,7 +236,8 @@ export default function PvEChess() {
             <Timer
               time={playerTime}
               setTime={setPlayerTime}
-              stop_time={stopPlayerTime}
+              stopTime={stopPlayerTime}
+              setStopTime={setStopPlayerTime}
               player={true}
               win={win}
               setWin={setWin}
