@@ -1,14 +1,18 @@
 import { Chessboard } from "react-chessboard";
 import { useState, useEffect } from "react";
 import { Chess } from "chess.js";
-import { Container, Dialog, Button } from "@mui/material";
+import {
+  Container,
+  Dialog,
+  Button,
+  Typography,
+  Box,
+  Paper,
+  DialogActions,
+  DialogContent,
+} from "@mui/material";
 import Settings from "./settings.jsx";
 import "../static/css/chessjsx.css";
-import {
-  CompareArrowsOutlined,
-  PlagiarismSharp,
-  SettingsSharp,
-} from "@mui/icons-material";
 import Timer from "./timer.jsx";
 
 export default function PvEChess() {
@@ -23,8 +27,9 @@ export default function PvEChess() {
   const [timeUnit, setTimeUnit] = useState("m");
   const [skillLevel, setSkillLevel] = useState(10);
   const [submitted, setSubmitted] = useState(false);
-  const [win, setWin] = useState();
-  const [draw, setDraw] = useState(false);
+  const [win, setWin] = useState(null);
+  const [endMsg, setEndMsg] = useState("null");
+  const [endSubMsg, setEndSubMsg] = useState("null");
 
   const SEC_IN_MIN = 60;
   const SEC_IN_HOUR = 3600;
@@ -37,6 +42,13 @@ export default function PvEChess() {
       alignItems: "center",
       justifyContent: "center",
       padding: "20px",
+    },
+  };
+  const dialogStyles = {
+    sx: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
     },
   };
   function makeComputerMove() {
@@ -69,14 +81,11 @@ export default function PvEChess() {
         const updatedGame = new Chess(game.fen());
         updatedGame.move(bestMove);
         console.log("Computer move: ", bestMove);
+        if (possibleMoves.length === 0 || game.isGameOver()) return;
         setGame(updatedGame);
-        if (game.isGameOver() || game.isDraw() || possibleMoves.length === 0) {
-          setStopCompTime(true);
-          setStopPlayerTime(true);
-        } else {
-          setStopCompTime(true);
-          setStopPlayerTime(false);
-        }
+        setStopCompTime(true);
+        setStopPlayerTime(false);
+
         // Update the UI or perform any other necessary actions
       })
       .catch((error) => {
@@ -107,58 +116,46 @@ export default function PvEChess() {
   }
 
   useEffect(() => {
-    const possibleMoves = game.moves();
+    if (game === null) return;
 
-    if (game.isGameOver() || game.isDraw() || possibleMoves.length === 0) {
+    const possibleMoves = game.moves();
+    const currentTurn = game.turn();
+    const isCheckmate = game.isCheckmate();
+    const isDraw = game.isDraw();
+
+    if (isCheckmate) {
+      setOpen(false);
+      setStopPlayerTime(true);
+      setStopCompTime(true);
+      setEndMsg(currentTurn === "b" ? "White wins!" : "Black wins!");
+      setEndSubMsg("by checkmate");
+    } else if (isDraw) {
+      setOpen(false);
+      setStopPlayerTime(true);
+      setStopCompTime(true);
+      setEndMsg("Draw!");
+      if (game.isStalemate()) setEndSubMsg("by stalemate");
+      if (game.isThreefoldRepetition()) setEndSubMsg("by repeated moves");
+      if (game.isInsufficientMaterial())
+        setEndSubMsg("by insufficient material");
+    } else if (possibleMoves.length === 0 || game.isGameOver()) {
       setStopCompTime(true);
       setStopPlayerTime(true);
-    }
-    if (color === "white") {
-      if (game !== null && game.turn() === "b") {
-        if (game.isCheckmate()) {
-          setWin(true);
-        } else if (game.isDraw()) {
-          setDraw(true);
-        } else {
-          makeComputerMove();
-        }
-      } else if (game !== null && game.turn() === "w") {
-        if (game.isCheckmate()) {
-          setWin(false);
-        } else if (game.isDraw()) {
-          setDraw(true);
-        }
-      }
-    } else {
-      if (game !== null && game.turn() === "w") {
-        if (game.isCheckmate()) {
-          setWin(true);
-          setOpen(false);
-        } else if (game.isDraw()) {
-          setDraw(true);
-          setOpen(false);
-        } else {
-          makeComputerMove();
-        }
-      } else if (game !== null && game.turn() === "b") {
-        if (game.isCheckmate()) {
-          setWin(false);
-          setOpen(false);
-        } else if (game.isDraw()) {
-          setDraw(true);
-          setOpen(false);
-        }
-      }
+    } else if (currentTurn === "b" && color === "white") {
+      makeComputerMove();
+    } else if (currentTurn === "w" && color === "black") {
+      makeComputerMove();
     }
   }, [game]);
 
   useEffect(() => {
-    setOpen(true);
-    if (game !== null && color === "black" && game.turn() === "w") {
+    if (color === "black" && game.turn() === "w" && submitted) {
+      setOpen(true);
       setStopPlayerTime(true);
       setStopCompTime(false);
       makeComputerMove();
     } else {
+      setOpen(true);
       setStopPlayerTime(false);
       setStopCompTime(true);
     }
@@ -183,10 +180,31 @@ export default function PvEChess() {
 
   useEffect(() => {
     setOpen(false);
-  }, [win, draw]);
+    setStopPlayerTime(true);
+    setStopCompTime(true);
+    setEndMsg(win ? "White wins!" : "Black wins!"); // needs to be fixed--bug on pBlack
+    setEndSubMsg("by timeout");
+  }, [win]);
 
+  const handlePlayAgain = (event) => {
+    setSubmitted(false);
+    setWin(null);
+    setOpen(false);
+    setGame(new Chess());
+  };
   return (
     <Container sx={containerStyles.sx}>
+      {submitted && (
+        <Dialog open={!open} sx={dialogStyles.sx}>
+          <DialogContent>
+            <Typography align="center">{endMsg}</Typography>
+            <Typography align="center">{endSubMsg}</Typography>
+          </DialogContent>
+          <DialogActions sx={{ justifyContent: "center" }}>
+            <Button onClick={handlePlayAgain}>Play Again</Button>
+          </DialogActions>
+        </Dialog>
+      )}
       <div className="boardWrapper">
         {submitted && (
           <div className="timerWrapper">
@@ -224,9 +242,6 @@ export default function PvEChess() {
               setWin={setWin}
             />
           </div>
-        )}
-        {submitted && (
-          <Dialog open={true}>test</Dialog>
         )}
       </div>
       <Settings

@@ -32,7 +32,7 @@ const Timer = ({ time, setTime, stop_time, player, win, setWin }) => {
   };
   const paperStyles = {
     sx: {
-      border: "1px inset #000",
+      border: "2px inset #000",
     },
   };
   const textStyles = {
