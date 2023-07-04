@@ -152,4 +152,4 @@ LOGGING = {
     },
 }
 
-ENGINE_PATH = f"/home/dkir/Projects/Chess/backend/engine/stockfish_15.1_linux_x64/stockfish-ubuntu-20.04-x86-64"
+ENGINE_PATH = f"engine/stockfish_15.1_linux_x64/stockfish-ubuntu-20.04-x86-64"

@@ -25,6 +25,8 @@ const containerStyles = {
     alignItems: "center",
     justifyContent: "center",
     padding: "20px",
+    width: "100%",
+    height: "100%",
   },
 };
 const dialogStyles = {
@@ -116,8 +118,22 @@ export default function PvEChess() {
   }
 
   useEffect(() => {
-    if (playerTime === 0 || compTime === 0) return;
-    if (game === null || win != null) return;
+    if (game === null) return;
+    if (win != null) {
+      setOpen(false);
+      setStopPlayerTime(true);
+      setStopCompTime(true);
+      if (
+        (playerTime <= 0 && color === "white") ||
+        (compTime <= 0 && color === "black")
+      ) {
+        setEndMsg("Black Wins!");
+      } else {
+        setEndMsg("White Wins!");
+      }
+      setEndSubMsg("by timeout");
+      return;
+    }
 
     const possibleMoves = game.moves();
     const currentTurn = game.turn();
@@ -147,7 +163,7 @@ export default function PvEChess() {
     } else if (currentTurn === "w" && color === "black" && open) {
       makeComputerMove();
     }
-  }, [game]);
+  }, [game, win]);
 
   useEffect(() => {
     if (submitted) setOpen(true);
@@ -178,14 +194,6 @@ export default function PvEChess() {
         setCompTime(MS_IN_SEC);
     }
   }, [submitted]);
-
-  useEffect(() => {
-    setOpen(false);
-    setStopPlayerTime(true);
-    setStopCompTime(true);
-    setEndMsg(win ? "White wins!" : "Black wins!"); // needs to be fixed--bug on pBlack
-    setEndSubMsg("by timeout");
-  }, [win]);
 
   const handlePlayAgain = (event) => {
     setSubmitted(false);
@@ -223,7 +231,7 @@ export default function PvEChess() {
           id="mainboard"
           arePiecesDraggable={open}
           boardOrientation={color}
-          boardWidth={450}
+          boardWidth={600}
           position={game.fen()}
           onPieceDrop={onDrop}
           customBoardStyle={{

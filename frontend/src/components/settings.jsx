@@ -26,7 +26,11 @@ const fieldStyles = {
     padding: "10px",
   },
 };
-
+const containerStyles = {
+  sx: {
+    width: "40%",
+  },
+};
 const Settings = ({
   color,
   setColor,
@@ -39,7 +43,6 @@ const Settings = ({
   submitted,
   setSubmitted,
 }) => {
-
   const handleColorChange = (event) => {
     setColor(event.target.value);
   };
@@ -54,18 +57,17 @@ const Settings = ({
 
   const handleSkillLevelChange = (event) => {
     setSkillLevel(event.target.value);
-    
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     setSubmitted(true);
     console.log(color, timeAmount, timeUnit, skillLevel);
-    }
+  };
   const timeAmountMin = timeUnit === "m" || timeUnit === "s" ? 1 : 1;
   const timeAmountMax = timeUnit === "m" || timeUnit === "s" ? 59 : 12;
   return (
-    <div>
+    <Container sx={containerStyles.sx}>
       {!submitted && (
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2} direction="column">
@@ -84,7 +86,7 @@ const Settings = ({
               </FormControl>
             </Grid>
             <Grid item container spacing={2}>
-              <Grid item xl={8}>
+              <Grid item xl={4}>
                 <FormControl fullWidth>
                   <TextField
                     id="time-amount"
@@ -156,7 +158,7 @@ const Settings = ({
           <Button>Undo</Button>
         </Container>
       )}
-    </div>
+    </Container>
   );
 };
 
