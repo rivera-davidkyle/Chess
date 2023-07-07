@@ -29,3 +29,6 @@ dist/
 package-lock.json
 yarn.lock
 
+backend/engine
+backend/api/__pycache__
+backend/backend/__pycache__
