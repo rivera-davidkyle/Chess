@@ -5,7 +5,6 @@ import Timer from "./timer.jsx";
 import {
   Container,
   Grid,
-  IconButton,
   Button,
   FormControl,
   FormLabel,
@@ -14,12 +13,7 @@ import {
   InputLabel,
   TextField,
 } from "@mui/material";
-import {
-  ArrowBackIos,
-  ArrowForwardIos,
-  FirstPage,
-  LastPage,
-} from "@mui/icons-material";
+
 
 const fieldStyles = {
   sx: {
@@ -68,13 +62,12 @@ const Settings = ({
   const timeAmountMax = timeUnit === "m" || timeUnit === "s" ? 59 : 12;
   return (
     <Container sx={containerStyles.sx}>
-      {!submitted && (
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2} direction="column">
             <Grid item>
-              <FormControl fullWidth>
-                <InputLabel id="color-label">Color</InputLabel>
-                <Select
+              <FormControl fullWidth >
+                <InputLabel id="color-label" >Color</InputLabel>
+                <Select 
                   labelId="color-label"
                   id="color"
                   value={color}
@@ -132,32 +125,19 @@ const Settings = ({
                 />
               </FormControl>
             </Grid>
-            <Grid item>
+            <Grid item sx={{
+              display:"flex", 
+              alignItems:"center", 
+              justifyContent:"center"
+              }}>
               <Button variant="contained" type="submit">
                 Play
               </Button>
             </Grid>
           </Grid>
         </form>
-      )}
-      {submitted && (
-        <Container>
-          <IconButton>
-            <FirstPage />
-          </IconButton>
-          <IconButton>
-            <ArrowBackIos />
-          </IconButton>
-          <IconButton>
-            <ArrowForwardIos />
-          </IconButton>
-          <IconButton>
-            <LastPage />
-          </IconButton>
-          <Button>Reset</Button>
-          <Button>Undo</Button>
-        </Container>
-      )}
+      
+      
     </Container>
   );
 };

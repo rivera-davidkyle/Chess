@@ -8,10 +8,18 @@ import {
   Typography,
   DialogActions,
   DialogContent,
+  // IconButton,
+
 } from "@mui/material";
 import Settings from "./settings.jsx";
 import "../static/css/chessjsx.css";
 import Timer from "./timer.jsx";
+// import {
+//   ArrowBackIos,
+//   ArrowForwardIos,
+//   FirstPage,
+//   LastPage,
+// } from "@mui/icons-material";
 
 const SEC_IN_MIN = 60;
 const SEC_IN_HOUR = 3600;
@@ -118,6 +126,7 @@ export default function PvEChess() {
   }
 
   useEffect(() => {
+    console.log("Prompted, current turn->", game.turn());
     if (game === null) return;
     if (win != null) {
       setOpen(false);
@@ -253,7 +262,38 @@ export default function PvEChess() {
           </div>
         )}
       </div>
-      <Settings
+      {/* {submitted && (
+        <Container sx={{
+          display:"flex", 
+          justifyContent:"center"
+          }}>
+          <IconButton>
+            <FirstPage />
+          </IconButton>
+          <IconButton>
+            <ArrowBackIos />
+          </IconButton>
+          <IconButton>
+            <ArrowForwardIos />
+          </IconButton>
+          <IconButton>
+            <LastPage />
+          </IconButton>
+          <Button onClick={() => {
+            const resetGame = new Chess(game.fen());
+            resetGame.reset();
+            setGame(resetGame);
+          }}>Reset</Button>
+          <Button onClick={() => {
+            console.log(game.fen());
+            const undoMove = new Chess(game.fen());
+            undoMove.undo();
+            console.log(undoMove.fen());
+            setGame(undoMove);
+          }}>Undo</Button>
+        </Container>
+      )} */}
+      {!submitted && (<Settings
         color={color}
         setColor={setColor}
         timeAmount={timeAmount}
@@ -265,6 +305,7 @@ export default function PvEChess() {
         submitted={submitted}
         setSubmitted={setSubmitted}
       />
+      )}
     </Container>
   );
 }

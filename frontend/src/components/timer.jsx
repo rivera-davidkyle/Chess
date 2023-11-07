@@ -39,7 +39,6 @@ const Timer = ({
       minutes: updatedMinutes,
       seconds: updatedSeconds,
     });
-    setTime(time - 100);
   };
   const [timerData, setTimerData] = useState({
     hours: 0,
@@ -49,8 +48,11 @@ const Timer = ({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (time >= 0 && !stopTime) {
+      if (time >= 0) {
         calculateTime();
+        if (!stopTime) {
+          setTime(time - 100);
+        }
       } else if (time < 0) {
         setStopTime(true);
         if (player) {
@@ -71,7 +73,7 @@ const Timer = ({
       <Container>
         <Box sx={boxStyles.sx}>
           <Paper elevation={5} sx={paperStyles.sx}>
-            <Typography sx={textStyles.sx}>
+            <Typography sx={textStyles.sx} align="center">
               {hours > 0 ? hours.toString().padStart(2, "0") + ":" : ""}
               {minutes.toString().padStart(2, "0")}:
               {seconds.toString().padStart(2, "0")}
